@@ -120,14 +120,14 @@ jobs:
       - name: Sign the images
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ github.actor }}/user-service:${{ github.run_id }}
+        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ github.repository }}/user-service:${{ github.run_id }}
       - name: Write public key to disk
         run: 'echo "$KEY" > cosign.pub'
         shell: bash
         env:
           KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
       - name: Verify the pushed tags
-        run: cosign verify --key cosign.pub ${{ env.REGISTRY }}/${{ github.actor }}/user-service:${{ github.run_id }}
+        run: cosign verify --key cosign.pub ${{ env.REGISTRY }}/${{ github.repository }}/user-service:${{ github.run_id }}
         env:
           COSIGN_EXPERIMENTAL: 1
       - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
