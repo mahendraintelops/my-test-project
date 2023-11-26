@@ -112,15 +112,14 @@ jobs:
           push: true
       - name: Install cosign
         uses: sigstore/cosign-installer@v2.0.0
-      - name: Write signing key to disk
-        run: 'echo "$KEY" > cosign.key'
+      - name: Write signing key to disk and Sign the images
+        run: |
+         echo "$KEY" > cosign.key
+         cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ github.repository }}/user-service:${{ github.run_id }}
         shell: bash
         env:
           KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-      - name: Sign the images
-        env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ github.repository }}/user-service:${{ github.run_id }}
       - name: Write public key to disk
         run: 'echo "$KEY" > cosign.pub'
         shell: bash
