@@ -2,3 +2,5 @@ user-service
 ../.idea
 .devspace
 /sqlite.db
+/cosign.pub
+/cosign.key
