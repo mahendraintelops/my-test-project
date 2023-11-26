@@ -111,14 +111,23 @@ jobs:
           # build on feature branches, push only on main branch
           push: true
       - name: Install cosign
-        uses: sigstore/cosign-installer@main
-      - name: Sign the images
-        run: |
-          cosign sign -y ${{ env.REGISTRY }}/${{ github.repository }}/user-service:${{ github.run_id }}
+        uses: sigstore/cosign-installer@v2.0.0
+      - name: Write signing key to disk
+        run: 'echo "$KEY" > cosign.key'
+        shell: bash
         env:
-          COSIGN_EXPERIMENTAL: 1
+          KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      - name: Sign the images
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ github.run_id }}
+      - name: Write public key to disk
+        run: 'echo "$KEY" > cosign.pub'
+        shell: bash
+        env:
+          KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
       - name: Verify the pushed tags
-        run: cosign verify ${{ env.REGISTRY }}/${{ github.repository }}/user-service:${{ github.run_id }} --certificate-identity ${{ env.GH_URL }}/${{ github.repository }}/.github/workflows/user-service-ci.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com
+        run: cosign verify --key cosign.pub ${{ env.REGISTRY }}/${{ github.repository }}/user-service:${{ github.run_id }}
         env:
           COSIGN_EXPERIMENTAL: 1
       - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
